@@ -1,0 +1,34 @@
+spring:
+  application:
+    name: investment-funds-api
+  profiles:
+    default: local
+  jackson:
+    time-zone: America/Bogota
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: never
+
+app:
+  aws:
+    dynamodb:
+      region: us-east-1
+      endpoint: http://localhost:8000
+      clients-table: clients
+      funds-table: funds
+      subscriptions-table: subscriptions
+      transactions-table: transactions
+  security:
+    jwt:
+      secret: 0123456789012345678901234567890123456789012345678901234567890123
+      expiration-minutes: 60
+      issuer: investment-funds-api

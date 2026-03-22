@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.funds.domain.model.ClientTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2026-03-21T22:06:17.780Z" hostname="MICHAEL" time="0.001">
+  <properties/>
+  <testcase name="shouldCreateClientWithInitialBalanceOf500000Cop()" classname="com.example.funds.domain.model.ClientTest" time="0.001"/>
+  <testcase name="shouldRejectDebitWhenBalanceIsInsufficient()" classname="com.example.funds.domain.model.ClientTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

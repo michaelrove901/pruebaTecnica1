@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.funds.application.usecase.CancelFundSubscriptionUseCaseImplTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-03-21T22:06:16.688Z" hostname="MICHAEL" time="1.001">
+  <properties/>
+  <testcase name="shouldRejectCancellationWhenSubscriptionBelongsToAnotherClient()" classname="com.example.funds.application.usecase.CancelFundSubscriptionUseCaseImplTest" time="0.969"/>
+  <testcase name="shouldRejectCancellationWhenSubscriptionIsAlreadyCancelled()" classname="com.example.funds.application.usecase.CancelFundSubscriptionUseCaseImplTest" time="0.004"/>
+  <testcase name="shouldCancelSubscriptionSuccessfullyAndReturnBalance()" classname="com.example.funds.application.usecase.CancelFundSubscriptionUseCaseImplTest" time="0.021"/>
+  <testcase name="shouldRejectCancellationWhenSubscriptionDoesNotExist()" classname="com.example.funds.application.usecase.CancelFundSubscriptionUseCaseImplTest" time="0.004"/>
+  <system-out><![CDATA[17:06:17.622 [Test worker] INFO com.example.funds.application.usecase.CancelFundSubscriptionUseCaseImpl -- Processing subscription cancellation. clientId=client-1, subscriptionId=sub-1
+17:06:17.664 [Test worker] INFO com.example.funds.application.usecase.CancelFundSubscriptionUseCaseImpl -- Processing subscription cancellation. clientId=client-1, subscriptionId=sub-1
+17:06:17.667 [Test worker] INFO com.example.funds.application.usecase.CancelFundSubscriptionUseCaseImpl -- Processing subscription cancellation. clientId=client-1, subscriptionId=sub-1
+17:06:17.669 [Test worker] INFO com.example.funds.application.usecase.CancelFundSubscriptionUseCaseImpl -- Subscription cancellation completed. clientId=client-1, subscriptionId=sub-1, transactionId=8632f5e3-5c26-4c34-bd29-bda330bea8f0
+17:06:17.690 [Test worker] INFO com.example.funds.application.usecase.CancelFundSubscriptionUseCaseImpl -- Processing subscription cancellation. clientId=client-1, subscriptionId=missing-sub
+]]></system-out>
+  <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (C:\Users\micha\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.14.19\154da3a65b4f4a909d3e5bdec55d1b2b4cbb6ce1\byte-buddy-agent-1.14.19.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

@@ -1,0 +1,19 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+app:
+  aws:
+    dynamodb:
+      endpoint: ${DYNAMODB_ENDPOINT:}
+      region: ${AWS_REGION:us-east-1}
+      clients-table: ${DYNAMODB_CLIENTS_TABLE:clients}
+      funds-table: ${DYNAMODB_FUNDS_TABLE:funds}
+      subscriptions-table: ${DYNAMODB_SUBSCRIPTIONS_TABLE:subscriptions}
+      transactions-table: ${DYNAMODB_TRANSACTIONS_TABLE:transactions}
+  security:
+    jwt:
+      secret: ${JWT_SECRET}
+      expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+      issuer: ${JWT_ISSUER:investment-funds-api}

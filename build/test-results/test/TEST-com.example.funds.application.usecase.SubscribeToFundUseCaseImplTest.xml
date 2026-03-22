@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.example.funds.application.usecase.SubscribeToFundUseCaseImplTest" tests="5" skipped="0" failures="0" errors="0" timestamp="2026-03-21T22:06:17.740Z" hostname="MICHAEL" time="0.039">
+  <properties/>
+  <testcase name="shouldSubscribeSuccessfully()" classname="com.example.funds.application.usecase.SubscribeToFundUseCaseImplTest" time="0.024"/>
+  <testcase name="shouldRejectSubscriptionWhenFundIsInactive()" classname="com.example.funds.application.usecase.SubscribeToFundUseCaseImplTest" time="0.003"/>
+  <testcase name="shouldRejectSubscriptionWhenActiveSubscriptionAlreadyExists()" classname="com.example.funds.application.usecase.SubscribeToFundUseCaseImplTest" time="0.005"/>
+  <testcase name="shouldRejectSubscriptionWhenBalanceIsInsufficient()" classname="com.example.funds.application.usecase.SubscribeToFundUseCaseImplTest" time="0.003"/>
+  <testcase name="shouldRejectSubscriptionWhenFundDoesNotExist()" classname="com.example.funds.application.usecase.SubscribeToFundUseCaseImplTest" time="0.002"/>
+  <system-out><![CDATA[17:06:17.763 [Test worker] INFO com.example.funds.application.usecase.SubscribeToFundUseCaseImpl -- Processing fund subscription. clientId=client-1, fundId=fund-1
+17:06:17.764 [Test worker] INFO com.example.funds.application.usecase.SubscribeToFundUseCaseImpl -- Fund subscription completed. clientId=client-1, fundId=fund-1, subscriptionId=1dc2b6d0-fa6c-498e-80ba-0fab5657faf8, transactionId=7ed7cf72-bb07-4c51-b6f8-f0a1f0c6c54d
+17:06:17.769 [Test worker] INFO com.example.funds.application.usecase.SubscribeToFundUseCaseImpl -- Processing fund subscription. clientId=client-1, fundId=fund-1
+17:06:17.772 [Test worker] INFO com.example.funds.application.usecase.SubscribeToFundUseCaseImpl -- Processing fund subscription. clientId=client-1, fundId=fund-1
+17:06:17.777 [Test worker] INFO com.example.funds.application.usecase.SubscribeToFundUseCaseImpl -- Processing fund subscription. clientId=client-1, fundId=fund-1
+17:06:17.780 [Test worker] INFO com.example.funds.application.usecase.SubscribeToFundUseCaseImpl -- Processing fund subscription. clientId=client-1, fundId=missing-fund
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
