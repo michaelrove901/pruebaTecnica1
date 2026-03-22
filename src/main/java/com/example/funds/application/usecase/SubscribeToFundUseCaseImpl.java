@@ -2,8 +2,6 @@ package com.example.funds.application.usecase;
 
 import java.util.UUID;
 
-import jakarta.validation.Valid;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -53,7 +51,7 @@ public class SubscribeToFundUseCaseImpl implements SubscribeToFundUseCase {
     }
 
     @Override
-    public SubscriptionResponse execute(@Valid SubscribeToFundCommand command) {
+    public SubscriptionResponse execute(SubscribeToFundCommand command) {
         LOGGER.info("Processing fund subscription. clientId={}, fundId={}", command.clientId(), command.fundId());
 
         Client client = clientRepositoryPort.findById(command.clientId())

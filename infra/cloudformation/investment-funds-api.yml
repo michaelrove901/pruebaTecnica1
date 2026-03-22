@@ -1,0 +1,197 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Infrastructure for the investment-funds-api production environment.
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: prod
+    AllowedPattern: '^[a-z0-9-]+$'
+    Description: Environment prefix for named resources.
+  JwtIssuer:
+    Type: String
+    Default: investment-funds-api
+    Description: JWT issuer value expected by the application.
+  JwtExpirationMinutes:
+    Type: Number
+    Default: 60
+    Description: JWT expiration in minutes for the application runtime.
+
+Resources:
+  ClientsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${EnvironmentName}-clients'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: clientId
+          AttributeType: S
+        - AttributeName: email
+          AttributeType: S
+      KeySchema:
+        - AttributeName: clientId
+          KeyType: HASH
+      GlobalSecondaryIndexes:
+        - IndexName: email-index
+          KeySchema:
+            - AttributeName: email
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  FundsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub '${EnvironmentName}-funds'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: fundId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: fundId
+          KeyType: HASH
+
+  SubscriptionsTable:
+    Type: AWS::DynamoDB::Table
+    DependsOn:
+      - ClientsTable
+      - FundsTable
+    Properties:
+      TableName: !Sub '${EnvironmentName}-subscriptions'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: clientId
+          AttributeType: S
+        - AttributeName: subscriptionId
+          AttributeType: S
+        - AttributeName: statusOpenedAt
+          AttributeType: S
+        - AttributeName: fundStatus
+          AttributeType: S
+      KeySchema:
+        - AttributeName: clientId
+          KeyType: HASH
+        - AttributeName: subscriptionId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: subscription-id-index
+          KeySchema:
+            - AttributeName: subscriptionId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: client-status-index
+          KeySchema:
+            - AttributeName: clientId
+              KeyType: HASH
+            - AttributeName: statusOpenedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: client-fund-status-index
+          KeySchema:
+            - AttributeName: clientId
+              KeyType: HASH
+            - AttributeName: fundStatus
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  TransactionsTable:
+    Type: AWS::DynamoDB::Table
+    DependsOn:
+      - SubscriptionsTable
+    Properties:
+      TableName: !Sub '${EnvironmentName}-transactions'
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: clientId
+          AttributeType: S
+        - AttributeName: createdAtTransactionId
+          AttributeType: S
+        - AttributeName: typeCreatedAt
+          AttributeType: S
+      KeySchema:
+        - AttributeName: clientId
+          KeyType: HASH
+        - AttributeName: createdAtTransactionId
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: client-type-created-at-index
+          KeySchema:
+            - AttributeName: clientId
+              KeyType: HASH
+            - AttributeName: typeCreatedAt
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+
+  InvestmentFundsApiDynamoPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !Sub '${EnvironmentName}-investment-funds-api-dynamodb-${AWS::Region}'
+      Description: Least-privilege access for the investment-funds-api DynamoDB tables and indexes.
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: DynamoDbTablesReadWrite
+            Effect: Allow
+            Action:
+              - dynamodb:DescribeTable
+              - dynamodb:GetItem
+              - dynamodb:PutItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+            Resource:
+              - !GetAtt ClientsTable.Arn
+              - !Sub '${ClientsTable.Arn}/index/*'
+              - !GetAtt FundsTable.Arn
+              - !Sub '${FundsTable.Arn}/index/*'
+              - !GetAtt SubscriptionsTable.Arn
+              - !Sub '${SubscriptionsTable.Arn}/index/*'
+              - !GetAtt TransactionsTable.Arn
+              - !Sub '${TransactionsTable.Arn}/index/*'
+
+Outputs:
+  ClientsTableName:
+    Description: Value for DYNAMODB_CLIENTS_TABLE
+    Value: !Ref ClientsTable
+
+  FundsTableName:
+    Description: Value for DYNAMODB_FUNDS_TABLE
+    Value: !Ref FundsTable
+
+  SubscriptionsTableName:
+    Description: Value for DYNAMODB_SUBSCRIPTIONS_TABLE
+    Value: !Ref SubscriptionsTable
+
+  TransactionsTableName:
+    Description: Value for DYNAMODB_TRANSACTIONS_TABLE
+    Value: !Ref TransactionsTable
+
+  AwsRegion:
+    Description: Value for AWS_REGION
+    Value: !Ref AWS::Region
+
+  JwtIssuerValue:
+    Description: Value for JWT_ISSUER
+    Value: !Ref JwtIssuer
+
+  JwtExpirationMinutesValue:
+    Description: Value for JWT_EXPIRATION_MINUTES
+    Value: !Ref JwtExpirationMinutes
+
+  DynamoPolicyArn:
+    Description: Managed policy ARN to attach to the application role.
+    Value: !Ref InvestmentFundsApiDynamoPolicy
+
+  EnvironmentVariablesExample:
+    Description: Example production environment variables excluding JWT_SECRET.
+    Value: !Sub >-
+      AWS_REGION=${AWS::Region},
+      DYNAMODB_CLIENTS_TABLE=${ClientsTable},
+      DYNAMODB_FUNDS_TABLE=${FundsTable},
+      DYNAMODB_SUBSCRIPTIONS_TABLE=${SubscriptionsTable},
+      DYNAMODB_TRANSACTIONS_TABLE=${TransactionsTable},
+      JWT_ISSUER=${JwtIssuer},
+      JWT_EXPIRATION_MINUTES=${JwtExpirationMinutes}

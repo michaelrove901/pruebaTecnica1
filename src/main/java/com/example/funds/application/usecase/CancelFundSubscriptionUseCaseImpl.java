@@ -1,7 +1,5 @@
 package com.example.funds.application.usecase;
 
-import jakarta.validation.Valid;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -42,7 +40,7 @@ public class CancelFundSubscriptionUseCaseImpl implements CancelFundSubscription
     }
 
     @Override
-    public SubscriptionResponse execute(@Valid CancelFundSubscriptionCommand command) {
+    public SubscriptionResponse execute(CancelFundSubscriptionCommand command) {
         LOGGER.info("Processing subscription cancellation. clientId={}, subscriptionId={}", command.clientId(), command.subscriptionId());
 
         Client client = clientRepositoryPort.findById(command.clientId())

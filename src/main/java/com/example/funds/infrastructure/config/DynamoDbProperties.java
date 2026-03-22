@@ -6,6 +6,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public record DynamoDbProperties(
         String endpoint,
         String region,
+        String accessKey,
+        String secretKey,
         String clientsTable,
         String fundsTable,
         String subscriptionsTable,

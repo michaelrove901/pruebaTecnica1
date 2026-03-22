@@ -22,7 +22,6 @@ app:
   aws:
     dynamodb:
       region: us-east-1
-      endpoint: http://localhost:8000
       clients-table: clients
       funds-table: funds
       subscriptions-table: subscriptions

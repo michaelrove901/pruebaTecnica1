@@ -1,7 +1,5 @@
 package com.example.funds.application.usecase;
 
-import jakarta.validation.Valid;
-
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -30,7 +28,7 @@ public class GetClientPortfolioUseCaseImpl implements GetClientPortfolioUseCase 
     }
 
     @Override
-    public ClientPortfolioResponse execute(@Valid GetClientPortfolioQuery query) {
+    public ClientPortfolioResponse execute(GetClientPortfolioQuery query) {
         var client = clientRepositoryPort.findById(query.clientId())
                 .orElseThrow(() -> new ClientNotFoundException(query.clientId()));
 

@@ -8,3 +8,14 @@ app:
     dynamodb:
       endpoint: http://localhost:8000
       region: us-east-1
+      clients-table: clients
+      funds-table: funds
+      subscriptions-table: subscriptions
+      transactions-table: transactions
+      accessKey: dummy
+      secretKey: dummy
+  security:
+    jwt:
+      secret: 0123456789012345678901234567890123456789012345678901234567890123
+      expiration-minutes: 60
+      issuer: investment-funds-api-local

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.example.funds.application.usecase.GetClientPortfolioUseCaseImplTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-03-21T22:06:17.721Z" hostname="MICHAEL" time="0.004">
+<testsuite name="com.example.funds.application.usecase.GetClientPortfolioUseCaseImplTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2026-03-22T21:25:37.513Z" hostname="MICHAEL" time="0.004">
   <properties/>
   <testcase name="shouldReturnBalanceAndActiveSubscriptionsOrderedByOpenedAtDesc()" classname="com.example.funds.application.usecase.GetClientPortfolioUseCaseImplTest" time="0.004"/>
   <system-out><![CDATA[]]></system-out>

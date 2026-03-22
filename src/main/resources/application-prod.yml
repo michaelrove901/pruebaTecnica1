@@ -8,6 +8,8 @@ app:
     dynamodb:
       endpoint: ${DYNAMODB_ENDPOINT:}
       region: ${AWS_REGION:us-east-1}
+      accessKey: ${AWS_ACCESS_KEY_ID:}
+      secretKey: ${AWS_SECRET_ACCESS_KEY:}
       clients-table: ${DYNAMODB_CLIENTS_TABLE:clients}
       funds-table: ${DYNAMODB_FUNDS_TABLE:funds}
       subscriptions-table: ${DYNAMODB_SUBSCRIPTIONS_TABLE:subscriptions}

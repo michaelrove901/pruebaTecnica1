@@ -3,8 +3,6 @@ package com.example.funds.application.usecase;
 import java.util.Comparator;
 import java.util.List;
 
-import jakarta.validation.Valid;
-
 import org.springframework.stereotype.Service;
 import org.springframework.validation.annotation.Validated;
 
@@ -32,7 +30,7 @@ public class GetTransactionHistoryUseCaseImpl implements GetTransactionHistoryUs
     }
 
     @Override
-    public List<TransactionResponse> execute(@Valid GetTransactionHistoryQuery query) {
+    public List<TransactionResponse> execute(GetTransactionHistoryQuery query) {
         clientRepositoryPort.findById(query.clientId())
                 .orElseThrow(() -> new ClientNotFoundException(query.clientId()));
 
