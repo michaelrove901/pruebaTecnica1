@@ -15,6 +15,13 @@ Parameters:
     Type: Number
     Default: 60
     Description: JWT expiration in minutes for the application runtime.
+  AppBootstrapDemoData:
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: Enables idempotent demo data bootstrap at application startup.
 
 Resources:
   ClientsTable:
@@ -186,12 +193,17 @@ Outputs:
     Value: !Ref InvestmentFundsApiDynamoPolicy
 
   EnvironmentVariablesExample:
-    Description: Example production environment variables excluding JWT_SECRET.
+    Description: Example production environment variables for runtime or Elastic Beanstalk, excluding JWT_SECRET.
     Value: !Sub >-
       AWS_REGION=${AWS::Region},
       DYNAMODB_CLIENTS_TABLE=${ClientsTable},
       DYNAMODB_FUNDS_TABLE=${FundsTable},
       DYNAMODB_SUBSCRIPTIONS_TABLE=${SubscriptionsTable},
       DYNAMODB_TRANSACTIONS_TABLE=${TransactionsTable},
+      APP_BOOTSTRAP_DEMO_DATA=${AppBootstrapDemoData},
       JWT_ISSUER=${JwtIssuer},
       JWT_EXPIRATION_MINUTES=${JwtExpirationMinutes}
+
+  ElasticBeanstalkEnvironmentVariable:
+    Description: Elastic Beanstalk environment variable to enable demo bootstrap.
+    Value: !Sub 'APP_BOOTSTRAP_DEMO_DATA=${AppBootstrapDemoData}'

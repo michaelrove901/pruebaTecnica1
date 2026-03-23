@@ -1,0 +1,214 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Elastic Beanstalk deployment for investment-funds-api
+
+Parameters:
+  EnvironmentName:
+    Type: String
+    Default: prod
+
+  ApplicationName:
+    Type: String
+    Default: investment-funds-api
+
+  ArtifactBucket:
+    Type: String
+
+  ArtifactKey:
+    Type: String
+
+  DynamoPolicyArn:
+    Type: String
+    Description: Managed policy ARN created by the DynamoDB stack
+
+  AwsRegion:
+    Type: String
+    Default: us-east-2
+
+  ClientsTableName:
+    Type: String
+
+  FundsTableName:
+    Type: String
+
+  SubscriptionsTableName:
+    Type: String
+
+  TransactionsTableName:
+    Type: String
+
+  JwtIssuer:
+    Type: String
+    Default: investment-funds-api
+
+  JwtExpirationMinutes:
+    Type: Number
+    Default: 60
+
+  JwtSecret:
+    Type: String
+    NoEcho: true
+
+  AppBootstrapDemoData:
+    Type: String
+    Default: 'true'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: Enables idempotent demo data bootstrap for AWS validation/demo environments
+
+Resources:
+  InvestmentFundsApplication:
+    Type: AWS::ElasticBeanstalk::Application
+    Properties:
+      ApplicationName: !Ref ApplicationName
+      Description: Spring Boot backend for investment funds API
+
+  InvestmentFundsApplicationVersion:
+    Type: AWS::ElasticBeanstalk::ApplicationVersion
+    Properties:
+      ApplicationName: !Ref InvestmentFundsApplication
+      Description: Application version from uploaded JAR
+      SourceBundle:
+        S3Bucket: !Ref ArtifactBucket
+        S3Key: !Ref ArtifactKey
+
+  EbEc2Role:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${EnvironmentName}-${ApplicationName}-ec2-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - !Ref DynamoPolicyArn
+        - arn:aws:iam::aws:policy/AWSElasticBeanstalkWebTier
+        - arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy
+      Tags:
+        - Key: project
+          Value: investment-funds-api
+
+  EbInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      InstanceProfileName: !Sub '${EnvironmentName}-${ApplicationName}-instance-profile'
+      Roles:
+        - !Ref EbEc2Role
+
+  EbServiceLinkedRole:
+    Type: AWS::IAM::ServiceLinkedRole
+    Properties:
+      AWSServiceName: elasticbeanstalk.amazonaws.com
+      Description: Service-linked role for Elastic Beanstalk
+
+  InvestmentFundsEnvironment:
+    Type: AWS::ElasticBeanstalk::Environment
+    DependsOn:
+      - EbInstanceProfile
+      - EbServiceLinkedRole
+      - InvestmentFundsApplicationVersion
+    Properties:
+      ApplicationName: !Ref InvestmentFundsApplication
+      EnvironmentName: !Sub '${EnvironmentName}-${ApplicationName}'
+      VersionLabel: !Ref InvestmentFundsApplicationVersion
+      SolutionStackName: 64bit Amazon Linux 2023 v4.10.0 running Corretto 21
+      OptionSettings:
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: SPRING_PROFILES_ACTIVE
+          Value: prod
+
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: SERVER_PORT
+          Value: '5000'
+
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: APP_BOOTSTRAP_DEMO_DATA
+          Value: !Ref AppBootstrapDemoData
+
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: AWS_REGION
+          Value: !Ref AwsRegion
+
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: DYNAMODB_CLIENTS_TABLE
+          Value: !Ref ClientsTableName
+
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: DYNAMODB_FUNDS_TABLE
+          Value: !Ref FundsTableName
+
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: DYNAMODB_SUBSCRIPTIONS_TABLE
+          Value: !Ref SubscriptionsTableName
+
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: DYNAMODB_TRANSACTIONS_TABLE
+          Value: !Ref TransactionsTableName
+
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: JWT_ISSUER
+          Value: !Ref JwtIssuer
+
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: JWT_EXPIRATION_MINUTES
+          Value: !Ref JwtExpirationMinutes
+
+        - Namespace: aws:elasticbeanstalk:application:environment
+          OptionName: JWT_SECRET
+          Value: !Ref JwtSecret
+
+        - Namespace: aws:autoscaling:launchconfiguration
+          OptionName: IamInstanceProfile
+          Value: !Ref EbInstanceProfile
+
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: ServiceRole
+          Value: !Ref EbServiceLinkedRole
+
+        - Namespace: aws:elasticbeanstalk:environment
+          OptionName: EnvironmentType
+          Value: SingleInstance
+
+        - Namespace: aws:autoscaling:asg
+          OptionName: MinSize
+          Value: '1'
+
+        - Namespace: aws:autoscaling:asg
+          OptionName: MaxSize
+          Value: '1'
+
+Outputs:
+  ElasticBeanstalkApplicationName:
+    Value: !Ref InvestmentFundsApplication
+
+  ElasticBeanstalkEnvironmentName:
+    Value: !Ref InvestmentFundsEnvironment
+
+  ElasticBeanstalkEnvironmentUrl:
+    Value: !GetAtt InvestmentFundsEnvironment.EndpointURL
+
+  ElasticBeanstalkEc2RoleArn:
+    Value: !GetAtt EbEc2Role.Arn
+
+  ElasticBeanstalkInstanceProfile:
+    Value: !Ref EbInstanceProfile
+
+  ElasticBeanstalkServiceLinkedRole:
+    Value: !Ref EbServiceLinkedRole
+
+  EnvironmentVariablesExample:
+    Description: Example environment variables configured in Elastic Beanstalk
+    Value: !Sub >
+      SPRING_PROFILES_ACTIVE=prod,
+      SERVER_PORT=5000,
+      APP_BOOTSTRAP_DEMO_DATA=${AppBootstrapDemoData},
+      AWS_REGION=${AwsRegion},
+      DYNAMODB_CLIENTS_TABLE=${ClientsTableName},
+      DYNAMODB_FUNDS_TABLE=${FundsTableName},
+      DYNAMODB_SUBSCRIPTIONS_TABLE=${SubscriptionsTableName},
+      DYNAMODB_TRANSACTIONS_TABLE=${TransactionsTableName},
+      JWT_ISSUER=${JwtIssuer},
+      JWT_EXPIRATION_MINUTES=${JwtExpirationMinutes}

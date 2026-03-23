@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.example.funds.application.usecase.GetTransactionHistoryUseCaseImplTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-03-22T21:25:37.519Z" hostname="MICHAEL" time="0.011">
-  <properties/>
-  <testcase name="shouldRejectTransactionHistoryQueryWhenClientDoesNotExist()" classname="com.example.funds.application.usecase.GetTransactionHistoryUseCaseImplTest" time="0.003"/>
-  <testcase name="shouldReturnTransactionHistoryFilteredByType()" classname="com.example.funds.application.usecase.GetTransactionHistoryUseCaseImplTest" time="0.004"/>
-  <testcase name="shouldReturnTransactionHistoryOrderedByDateDesc()" classname="com.example.funds.application.usecase.GetTransactionHistoryUseCaseImplTest" time="0.004"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>

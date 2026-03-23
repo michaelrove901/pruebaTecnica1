@@ -1,24 +1,12 @@
 package com.example.funds.infrastructure.config;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-
-import com.example.funds.domain.model.Client;
-import com.example.funds.domain.model.Fund;
-import com.example.funds.domain.model.FundCategory;
-import com.example.funds.domain.model.Money;
-import com.example.funds.domain.model.Role;
-import com.example.funds.infrastructure.adapters.persistence.dynamodb.mapper.ClientDynamoDbMapper;
-import com.example.funds.infrastructure.adapters.persistence.dynamodb.mapper.FundDynamoDbMapper;
 
 import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 import software.amazon.awssdk.services.dynamodb.model.AttributeDefinition;
@@ -46,24 +34,18 @@ public class LocalDynamoDbInitializer implements ApplicationRunner {
     private static final String CLIENT_FUND_STATUS_INDEX = "client-fund-status-index";
     private static final String CLIENT_TYPE_CREATED_AT_INDEX = "client-type-created-at-index";
 
-    private static final String TEST_CLIENT_ID = "client-local-001";
-    private static final String TEST_CLIENT_EMAIL = "client.local@example.com";
-    private static final String TEST_CLIENT_PASSWORD = "Password123!";
-    private static final String TEST_CLIENT_PHONE = "+573001112233";
-    private static final String TEST_CLIENT_NAME = "Cliente Local";
-
     private final DynamoDbClient dynamoDbClient;
     private final DynamoDbProperties properties;
-    private final PasswordEncoder passwordEncoder;
+    private final DemoDataSeeder demoDataSeeder;
 
     public LocalDynamoDbInitializer(
             DynamoDbClient dynamoDbClient,
             DynamoDbProperties properties,
-            PasswordEncoder passwordEncoder
+            DemoDataSeeder demoDataSeeder
     ) {
         this.dynamoDbClient = dynamoDbClient;
         this.properties = properties;
-        this.passwordEncoder = passwordEncoder;
+        this.demoDataSeeder = demoDataSeeder;
     }
 
     @Override
@@ -73,14 +55,9 @@ public class LocalDynamoDbInitializer implements ApplicationRunner {
         createSubscriptionsTableIfNeeded();
         createTransactionsTableIfNeeded();
 
-        seedFunds();
-        seedTestClient();
-
-        LOGGER.info(
-                "Local DynamoDB initialization completed. testClientEmail={}, testClientPassword={}",
-                TEST_CLIENT_EMAIL,
-                TEST_CLIENT_PASSWORD
-        );
+        demoDataSeeder.seedDemoDataIfMissing();
+        demoDataSeeder.logDemoCredentials();
+        LOGGER.info("Local DynamoDB initialization completed.");
     }
 
     private void createClientsTableIfNeeded() throws InterruptedException {
@@ -201,43 +178,6 @@ public class LocalDynamoDbInitializer implements ApplicationRunner {
                 .build());
 
         waitForTable(properties.transactionsTable());
-    }
-
-    private void seedFunds() {
-        List<Fund> initialFunds = List.of(
-                new Fund("FPV_BTG_PACTUAL_RECAUDADORA", "FPV_BTG_PACTUAL_RECAUDADORA", FundCategory.FPV, Money.of(75000), true),
-                new Fund("FPV_BTG_PACTUAL_ECOPETROL", "FPV_BTG_PACTUAL_ECOPETROL", FundCategory.FPV, Money.of(125000), true),
-                new Fund("DEUDAPRIVADA", "DEUDAPRIVADA", FundCategory.FIC, Money.of(50000), true),
-                new Fund("FDO-ACCIONES", "FDO-ACCIONES", FundCategory.FIC, Money.of(250000), true),
-                new Fund("FPV_BTG_PACTUAL_DINAMICA", "FPV_BTG_PACTUAL_DINAMICA", FundCategory.FPV, Money.of(100000), true)
-        );
-
-        for (Fund fund : initialFunds) {
-            dynamoDbClient.putItem(PutItemRequest.builder()
-                    .tableName(properties.fundsTable())
-                    .item(FundDynamoDbMapper.toAttributes(FundDynamoDbMapper.toItem(fund)))
-                    .build());
-        }
-
-        LOGGER.info("Local fund catalog loaded. funds={}", initialFunds.size());
-    }
-
-    private void seedTestClient() {
-        Client testClient = Client.create(
-                TEST_CLIENT_ID,
-                TEST_CLIENT_NAME,
-                TEST_CLIENT_EMAIL,
-                TEST_CLIENT_PHONE,
-                passwordEncoder.encode(TEST_CLIENT_PASSWORD),
-                Set.of(Role.CLIENT)
-        );
-
-        dynamoDbClient.putItem(PutItemRequest.builder()
-                .tableName(properties.clientsTable())
-                .item(ClientDynamoDbMapper.toAttributes(ClientDynamoDbMapper.toItem(testClient)))
-                .build());
-
-        LOGGER.info("Local test client loaded. clientId={}, email={}", TEST_CLIENT_ID, TEST_CLIENT_EMAIL);
     }
 
     private boolean tableExists(String tableName) {

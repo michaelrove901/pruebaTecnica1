@@ -4,6 +4,8 @@ spring:
       on-profile: prod
 
 app:
+  bootstrap:
+    demo-data: ${APP_BOOTSTRAP_DEMO_DATA:false}
   aws:
     dynamodb:
       endpoint: ${DYNAMODB_ENDPOINT:}

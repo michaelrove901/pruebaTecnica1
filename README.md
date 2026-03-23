@@ -1,111 +1,91 @@
 # Investment Funds API
 
-API backend para gestión de fondos de inversión construida con Java 21, Spring Boot 3, DynamoDB y arquitectura hexagonal.
+API backend para gestion de fondos de inversion construida con Java 21, Spring Boot 3, DynamoDB, JWT y arquitectura hexagonal.
 
-El sistema permite que un cliente consulte fondos disponibles, se suscriba a un fondo, cancele una suscripción activa, consulte su portafolio y revise su historial de transacciones. Además, genera una notificación al suscribirse según la preferencia del cliente (`EMAIL` o `SMS`).
+La aplicacion permite que un cliente se autentique, consulte fondos disponibles, se suscriba a un fondo, cancele una suscripcion activa, revise su portafolio actual y consulte su historial de transacciones. El diseno prioriza separacion de responsabilidades, mantenibilidad y preparacion para despliegue en AWS como parte de una prueba tecnica backend.
 
-## Objetivo del Proyecto
+## 1. Descripcion del Proyecto
 
-Esta API resuelve un flujo básico de administración de fondos de inversión con reglas de negocio explícitas:
+### Proposito
 
-- El cliente inicia con saldo de `500000 COP`.
-- Cada fondo tiene un monto mínimo de vinculación.
-- Al suscribirse, el saldo se descuenta.
-- Al cancelar una suscripción, el saldo se reintegra.
-- Si el saldo no es suficiente, se responde con el mensaje exacto requerido por el negocio.
+Esta API resuelve un flujo simplificado de administracion de fondos de inversion en el que un cliente puede operar sobre un catalogo predefinido de fondos bajo reglas de negocio explicitas.
 
-El proyecto está planteado como una solución simple, mantenible y preparada para evolucionar a un despliegue real en AWS.
+### Funcionalidades Principales
 
-## Arquitectura
+- Autenticacion con JWT
+- Consulta de fondos disponibles
+- Suscripcion a un fondo
+- Cancelacion de una suscripcion activa
+- Consulta del portafolio del cliente
+- Consulta del historial de transacciones
+- Emision de una notificacion al crear una suscripcion
 
-Se implementó **arquitectura hexagonal** para separar la lógica de negocio de frameworks, transporte HTTP y persistencia.
+### Reglas de Negocio Principales
+
+- El cliente inicia con `500000 COP`
+- Cada fondo tiene un monto minimo de vinculacion
+- Al suscribirse a un fondo, el saldo disminuye
+- Al cancelar una suscripcion, el saldo se reintegra
+- Si el saldo no es suficiente, la API responde con el mensaje exacto requerido por el negocio
+
+## 2. Arquitectura
+
+El proyecto utiliza **arquitectura hexagonal** para aislar la logica de negocio de frameworks, persistencia y transporte HTTP.
 
 ### Capas
 
 - `domain`
-  - Entidades, value objects, enums y excepciones de negocio.
-  - Puertos de entrada y salida.
-  - No depende de Spring ni de AWS.
+  - Entidades
+  - Value objects
+  - Excepciones de negocio
+  - Puertos de entrada y salida
+  - No depende de Spring ni de AWS
 
 - `application`
-  - Implementación de casos de uso.
-  - Orquestación de reglas de negocio.
-  - DTOs de aplicación y mappers de dominio.
+  - Implementaciones de casos de uso
+  - DTOs de aplicacion
+  - Orquestacion del flujo de negocio
 
 - `infrastructure`
-  - Adaptadores REST.
-  - Seguridad JWT.
-  - Adaptadores DynamoDB.
-  - Configuración Spring y manejo global de errores.
+  - Controladores REST
+  - Seguridad y JWT
+  - Adaptadores DynamoDB
+  - Configuracion Spring
+  - Manejo global de errores
 
-### Decisiones Técnicas
+### Decisiones Tecnicas Principales
 
-- **Hexagonal architecture** para aislar dominio y facilitar testing.
-- **DynamoDB** por alineación con AWS y modelo de acceso simple por claves e índices.
-- **JWT** para autenticación básica stateless.
-- **Spring Boot** para acelerar bootstrap, seguridad y exposición REST.
-- **Pruebas unitarias** sobre dominio y casos de uso, evitando tests frágiles de contexto completo.
+- **Arquitectura hexagonal** para preservar el aislamiento del dominio y facilitar testing
+- **DynamoDB** por alineacion con AWS y por un modelo de acceso basado en claves e indices
+- **JWT stateless** para mantener la seguridad simple y lista para produccion
+- **Spring Boot 3** para acelerar configuracion, seguridad y exposicion REST
+- **CloudFormation** para infraestructura reproducible
+- **Elastic Beanstalk** como opcion simple de despliegue administrado para la aplicacion
 
-## Tecnologías Usadas
+## 3. Tecnologias Usadas
 
 - Java 21
 - Spring Boot 3
-- Spring Security
 - Gradle
-- AWS SDK v2
+- Spring Security
 - DynamoDB
+- AWS SDK v2
 - JWT (`jjwt`)
+- AWS CloudFormation
+- AWS Elastic Beanstalk
 - JUnit 5
 - Mockito
-- Docker / Docker Compose
-- AWS CloudFormation
+- Docker Compose
 
-## Funcionalidades Principales
+## 4. Ejecucion Local
 
-- Listar fondos disponibles
-- Autenticarse con JWT
-- Suscribirse a un fondo
-- Cancelar suscripción activa
-- Consultar historial de transacciones
-- Consultar portafolio actual del cliente
-- Simular envío de notificación por `EMAIL` o `SMS`
+### Prerrequisitos
 
-## Seguridad
+- Java 21
+- Docker Desktop
+- PowerShell
 
-La autenticación se implementa con **JWT simple** usando Spring Security.
-
-### Flujo
-
-1. El cliente envía credenciales a `POST /api/v1/auth/login`.
-2. Si son válidas, la API genera un token JWT firmado.
-3. El cliente envía ese token en `Authorization: Bearer <token>`.
-4. Un filtro JWT valida firma, emisor y expiración.
-5. Si el token es válido, el `clientId` del token se inyecta en el contexto de seguridad y se usa en los endpoints protegidos.
-
-### Claims usados
-
-- `sub`: `clientId`
-- `email`
-- `roles`
-- `iss`
-- `exp`
-
-### Endpoints públicos
-
-- `POST /api/v1/auth/login`
-- `GET /actuator/health`
-
-### Endpoints protegidos
-
-- `GET /api/v1/funds`
-- `GET /api/v1/clients/me/portfolio`
-- `POST /api/v1/subscriptions`
-- `DELETE /api/v1/subscriptions/{subscriptionId}`
-- `GET /api/v1/transactions`
-
-## Cómo Correr Local
-
-### 1. Levantar DynamoDB Local
+### Levantar DynamoDB Local
 
 ```powershell
 docker compose up -d
@@ -117,47 +97,315 @@ Esto levanta DynamoDB Local en:
 http://localhost:8000
 ```
 
-### 2. Levantar la aplicación
+### Levantar la Aplicacion
 
 ```powershell
 .\gradlew.bat bootRun
 ```
 
-La aplicación arranca con perfil `local` por defecto.
+La aplicacion corre con perfil `local` por defecto.
 
-### 3. Bootstrap local automático
+### Que Ocurre Automaticamente en Local
 
-En perfil `local`, la aplicación:
+Al arrancar, el inicializador local:
 
 - crea las tablas DynamoDB si no existen
-- crea los índices secundarios globales requeridos
-- carga los 5 fondos iniciales
-- crea un cliente de prueba con contraseña en BCrypt
+- crea los GSIs requeridos
+- carga los 5 fondos del negocio
+- crea un cliente demo con password BCrypt
 
-### Credenciales de prueba
+### Credenciales Demo
 
-- Email: `client.local@example.com`
-- Password: `Password123!`
+- `clientId`: `client-local-001`
+- `email`: `client.local@example.com`
+- `password`: `Password123!`
 
-## Cómo Probar
+### Como Probar Localmente
 
-El proyecto incluye un archivo HTTP listo para recorrer el flujo completo:
+El repositorio incluye un archivo HTTP listo para recorrer el flujo completo:
 
 - [`requests/local-end-to-end.http`](/C:/Users/micha/OneDrive/Documentos/Prueba/requests/local-end-to-end.http)
 
-### Flujo sugerido
+Orden sugerido:
 
 1. Login
-2. Obtener fondos
-3. Suscribirse a un fondo
+2. Listar fondos
+3. Suscribirse
 4. Ver portafolio
 5. Ver transacciones
-6. Cancelar suscripción
-7. Verificar portafolio después de cancelar
+6. Cancelar suscripcion
+7. Ver portafolio nuevamente
 
-### Endpoints principales
+## 5. Despliegue en AWS
 
-#### Login
+Existen dos templates CloudFormation:
+
+- [`infra/cloudformation/investment-funds-api.yml`](/C:/Users/micha/OneDrive/Documentos/Prueba/infra/cloudformation/investment-funds-api.yml)
+- [`infra/cloudformation/investment-funds-api-eb.yml`](/C:/Users/micha/OneDrive/Documentos/Prueba/infra/cloudformation/investment-funds-api-eb.yml)
+
+### `investment-funds-api.yml`
+
+Este es el **stack de datos y permisos**.
+
+Crea:
+
+- tablas DynamoDB
+  - `clients`
+  - `funds`
+  - `subscriptions`
+  - `transactions`
+- GSIs usados por el codigo
+- politica IAM minima para acceso a DynamoDB
+- outputs utiles para configurar el runtime de la aplicacion
+
+Este stack debe desplegarse primero.
+
+No despliega la aplicacion Spring Boot. Su objetivo es provisionar la capa de persistencia y la politica IAM que luego usara el runtime.
+
+Ejemplo:
+
+```powershell
+aws cloudformation deploy `
+  --stack-name investment-funds-api-prod `
+  --template-file infra/cloudformation/investment-funds-api.yml `
+  --capabilities CAPABILITY_NAMED_IAM `
+  --parameter-overrides EnvironmentName=prod JwtIssuer=investment-funds-api JwtExpirationMinutes=60 AppBootstrapDemoData=true
+```
+
+### `investment-funds-api-eb.yml`
+
+Este es el **stack de despliegue de la aplicacion** sobre Elastic Beanstalk.
+
+Crea:
+
+- Elastic Beanstalk application
+- application version a partir de un JAR subido a S3
+- Elastic Beanstalk environment
+- rol EC2
+- instance profile
+- service-linked role
+- variables de entorno requeridas por la aplicacion
+
+Este stack debe desplegarse despues del stack DynamoDB y despues de subir el JAR a S3.
+
+Este stack es responsable del **runtime de la aplicacion**, no de crear las tablas DynamoDB.
+
+### Generar el JAR
+
+```powershell
+.\gradlew.bat clean bootJar
+```
+
+El artefacto generado normalmente queda en:
+
+```text
+build/libs/investment-funds-api-0.0.1-SNAPSHOT.jar
+```
+
+Puedes validar que exista con:
+
+```powershell
+Get-ChildItem build\libs
+```
+
+### Subir el JAR a S3
+
+Ejemplo:
+
+```powershell
+aws s3 cp `
+  build/libs/investment-funds-api-0.0.1-SNAPSHOT.jar `
+  s3://my-artifacts-bucket/investment-funds-api/investment-funds-api-0.0.1-SNAPSHOT.jar
+```
+
+### Desplegar o Actualizar el Stack de Elastic Beanstalk
+
+Ejemplo:
+
+```powershell
+aws cloudformation deploy `
+  --stack-name investment-funds-api-eb-prod `
+  --template-file infra/cloudformation/investment-funds-api-eb.yml `
+  --capabilities CAPABILITY_NAMED_IAM `
+  --parameter-overrides `
+    EnvironmentName=prod `
+    ApplicationName=investment-funds-api `
+    ArtifactBucket=my-artifacts-bucket `
+    ArtifactKey=investment-funds-api/investment-funds-api-0.0.1-SNAPSHOT.jar `
+    DynamoPolicyArn=<DYNAMO_POLICY_ARN> `
+    AwsRegion=<AWS_REGION> `
+    ClientsTableName=<CLIENTS_TABLE_NAME> `
+    FundsTableName=<FUNDS_TABLE_NAME> `
+    SubscriptionsTableName=<SUBSCRIPTIONS_TABLE_NAME> `
+    TransactionsTableName=<TRANSACTIONS_TABLE_NAME> `
+    JwtIssuer=investment-funds-api `
+    JwtExpirationMinutes=60 `
+    JwtSecret=<JWT_SECRET> `
+    AppBootstrapDemoData=true
+```
+
+### Parametros que Debe Completar el Usuario
+
+Para el stack DynamoDB:
+
+- `EnvironmentName`
+- `JwtIssuer`
+- `JwtExpirationMinutes`
+- `AppBootstrapDemoData`
+
+Para el stack Elastic Beanstalk:
+
+- `EnvironmentName`
+- `ApplicationName`
+- `ArtifactBucket`
+- `ArtifactKey`
+- `DynamoPolicyArn`
+- `AwsRegion`
+- `ClientsTableName`
+- `FundsTableName`
+- `SubscriptionsTableName`
+- `TransactionsTableName`
+- `JwtIssuer`
+- `JwtExpirationMinutes`
+- `JwtSecret`
+- `AppBootstrapDemoData`
+
+Fuente recomendada para varios de esos valores:
+
+- `DynamoPolicyArn`: output `DynamoPolicyArn` del stack `investment-funds-api.yml`
+- `ClientsTableName`: output `ClientsTableName`
+- `FundsTableName`: output `FundsTableName`
+- `SubscriptionsTableName`: output `SubscriptionsTableName`
+- `TransactionsTableName`: output `TransactionsTableName`
+- `AwsRegion`: output `AwsRegion`
+- `JwtIssuer`: usar el mismo issuer definido en el stack de datos o en la configuracion de la aplicacion
+- `JwtSecret`: suministrarlo manualmente o desde una fuente segura
+
+### Validar que el Backend Quedo Arriba
+
+Despues del despliegue, toma la URL del entorno Elastic Beanstalk desde el output del stack y ejecuta:
+
+```powershell
+curl http://<elastic-beanstalk-url>/actuator/health
+```
+
+Respuesta esperada:
+
+```json
+{"status":"UP"}
+```
+
+Luego valida login:
+
+```powershell
+curl -X POST http://<elastic-beanstalk-url>/api/v1/auth/login `
+  -H "Content-Type: application/json" `
+  -d "{\"email\":\"client.local@example.com\",\"password\":\"Password123!\"}"
+```
+
+Si `APP_BOOTSTRAP_DEMO_DATA=false`, el login demo anterior no funcionara a menos que crees los datos del cliente por otro mecanismo.
+
+## 6. Variables de Entorno
+
+### `SPRING_PROFILES_ACTIVE`
+
+Define el perfil Spring activo.
+
+- Local: `local`
+- AWS: `prod`
+
+### `SERVER_PORT`
+
+Puerto usado por el servidor de la aplicacion.
+
+- En Elastic Beanstalk normalmente es `5000`
+
+### `APP_BOOTSTRAP_DEMO_DATA`
+
+Controla si se siembran datos demo al arrancar.
+
+- `true`: crea fondos y cliente demo si no existen
+- `false` o sin definir: no siembra nada
+
+### `AWS_REGION`
+
+Region AWS usada por el cliente DynamoDB en produccion.
+
+Ejemplo:
+
+```text
+us-east-1
+```
+
+### `DYNAMODB_CLIENTS_TABLE`
+
+Nombre fisico de la tabla de clientes.
+
+### `DYNAMODB_FUNDS_TABLE`
+
+Nombre fisico de la tabla de fondos.
+
+### `DYNAMODB_SUBSCRIPTIONS_TABLE`
+
+Nombre fisico de la tabla de suscripciones.
+
+### `DYNAMODB_TRANSACTIONS_TABLE`
+
+Nombre fisico de la tabla de transacciones.
+
+### `JWT_ISSUER`
+
+Issuer esperado para firmar y validar los JWT.
+
+### `JWT_EXPIRATION_MINUTES`
+
+Tiempo de expiracion del token en minutos.
+
+### `JWT_SECRET`
+
+Secreto HMAC usado para generar y validar JWT.
+
+Este valor es obligatorio en produccion y no debe hardcodearse.
+
+Intencionalmente no se expone como output de CloudFormation.
+
+## 7. Bootstrap Demo
+
+`APP_BOOTSTRAP_DEMO_DATA` existe para soportar **ambientes de validacion y demo**.
+
+Cuando esta habilitada:
+
+- crea los 5 fondos del negocio si no existen
+- crea el cliente demo si no existe
+
+Cliente demo:
+
+- `clientId`: `client-local-001`
+- `email`: `client.local@example.com`
+- `password`: `Password123!`
+- `role`: `CLIENT`
+
+### Cuando Usarlo
+
+- demos de prueba tecnica
+- validacion funcional despues del despliegue en AWS
+- smoke testing en ambientes no productivos
+
+### Por que no para Produccion Real
+
+- los datos productivos deben gestionarse de forma explicita
+- no conviene dejar credenciales demo habilitadas en ambientes reales
+- produccion debe usar provisioning controlado y manejo seguro de secretos
+
+Valor recomendado en produccion real:
+
+```text
+APP_BOOTSTRAP_DEMO_DATA=false
+```
+
+## 8. Pruebas de API
+
+### Login
 
 `POST /api/v1/auth/login`
 
@@ -168,11 +416,11 @@ El proyecto incluye un archivo HTTP listo para recorrer el flujo completo:
 }
 ```
 
-#### Obtener fondos
+### Listar Fondos
 
 `GET /api/v1/funds`
 
-#### Suscribirse
+### Suscribirse
 
 `POST /api/v1/subscriptions`
 
@@ -183,183 +431,97 @@ El proyecto incluye un archivo HTTP listo para recorrer el flujo completo:
 }
 ```
 
-#### Ver portafolio
+### Ver Portafolio
 
 `GET /api/v1/clients/me/portfolio`
 
-#### Ver transacciones
+### Ver Transacciones
 
 `GET /api/v1/transactions`
 
-Opcional:
+Filtro opcional:
 
 `GET /api/v1/transactions?type=SUBSCRIPTION`
 
-#### Cancelar suscripción
+### Cancelar Suscripcion
 
 `DELETE /api/v1/subscriptions/{subscriptionId}`
 
-## Manejo de Errores
-
-La API expone un formato estándar:
-
-```json
-{
-  "code": "INSUFFICIENT_BALANCE",
-  "message": "No tiene saldo disponible para vincularse al fondo FPV_BTG_PACTUAL_ECOPETROL",
-  "details": [],
-  "path": "/api/v1/subscriptions",
-  "timestamp": "2026-03-22T16:00:00-05:00"
-}
-```
-
-Ejemplos de códigos:
-
-- `VALIDATION_ERROR`
-- `CLIENT_NOT_FOUND`
-- `FUND_NOT_FOUND`
-- `FUND_INACTIVE`
-- `INSUFFICIENT_BALANCE`
-- `ACTIVE_SUBSCRIPTION_ALREADY_EXISTS`
-- `SUBSCRIPTION_NOT_FOUND`
-- `SUBSCRIPTION_ALREADY_CANCELLED`
-- `UNAUTHORIZED_ACCESS`
-- `INVALID_CREDENTIALS`
-- `UNAUTHORIZED`
-- `INTERNAL_SERVER_ERROR`
-
-## DynamoDB
-
-### Tablas
-
-- `clients`
-- `funds`
-- `subscriptions`
-- `transactions`
-
-### Índices usados
-
-- `clients`
-  - `email-index`
-
-- `subscriptions`
-  - `subscription-id-index`
-  - `client-status-index`
-  - `client-fund-status-index`
-
-- `transactions`
-  - `client-type-created-at-index`
-
-El diseño está optimizado para:
-
-- consultar por `clientId`
-- obtener historial ordenado por fecha
-- consultar suscripciones activas
-- validar existencia de suscripción activa por cliente y fondo
-
-## Despliegue
-
-Se incluye una plantilla CloudFormation:
-
-- [`infra/cloudformation/investment-funds-api.yml`](/C:/Users/micha/OneDrive/Documentos/Prueba/infra/cloudformation/investment-funds-api.yml)
-
-### Qué crea
-
-- tablas DynamoDB
-- GSIs requeridos por la aplicación
-- política IAM mínima para acceso a DynamoDB
-- outputs útiles para configurar la app en producción
-
-### Ejemplo de despliegue
-
-```powershell
-aws cloudformation deploy `
-  --stack-name investment-funds-api-prod `
-  --template-file infra/cloudformation/investment-funds-api.yml `
-  --capabilities CAPABILITY_NAMED_IAM `
-  --parameter-overrides EnvironmentName=prod JwtIssuer=investment-funds-api JwtExpirationMinutes=60
-```
-
-### Variables de entorno requeridas en producción
-
-- `AWS_REGION`
-- `DYNAMODB_CLIENTS_TABLE`
-- `DYNAMODB_FUNDS_TABLE`
-- `DYNAMODB_SUBSCRIPTIONS_TABLE`
-- `DYNAMODB_TRANSACTIONS_TABLE`
-- `JWT_SECRET`
-- `JWT_ISSUER`
-- `JWT_EXPIRATION_MINUTES`
-
-## Estructura del Proyecto
+## 9. Estructura del Proyecto
 
 ```text
 src/
-├─ main/
-│  ├─ java/com/example/funds/
-│  │  ├─ domain/
-│  │  ├─ application/
-│  │  └─ infrastructure/
-│  └─ resources/
-└─ test/
-   └─ java/com/example/funds/
+|-- main/
+|   |-- java/com/example/funds/
+|   |   |-- domain/
+|   |   |-- application/
+|   |   `-- infrastructure/
+|   `-- resources/
+`-- test/
+    `-- java/com/example/funds/
+
+infra/
+`-- cloudformation/
+    |-- investment-funds-api.yml
+    `-- investment-funds-api-eb.yml
 ```
 
-### Estructura por responsabilidad
+### Responsabilidad por Paquetes
 
 - `domain/model`
-  - entidades y value objects
+  - entidades, value objects y enums
 
 - `domain/port/in`
   - contratos de casos de uso
 
 - `domain/port/out`
-  - contratos de persistencia y notificación
+  - contratos de persistencia y notificacion
 
 - `application/usecase`
-  - implementación de casos de uso
+  - implementaciones del flujo de negocio
 
 - `infrastructure/entrypoints/rest`
-  - controladores, requests y responses
+  - controladores, request DTOs y response DTOs
 
 - `infrastructure/adapters/persistence/dynamodb`
-  - repositorios y mappers DynamoDB
+  - adaptadores y mappers DynamoDB
 
 - `infrastructure/security`
-  - JWT, filtros y configuración Spring Security
+  - configuracion JWT, filtro y autenticacion
 
 - `infrastructure/config`
-  - configuración base y bootstrap local
+  - bootstrap de aplicacion e inicializacion por entorno
 
-## Calidad y Testing
+## 10. Mejoras Futuras
 
-El proyecto prioriza pruebas unitarias sobre lógica de negocio:
+- Mover secretos a AWS Secrets Manager o SSM Parameter Store
+- Agregar pipeline CI/CD
+- Implementar despliegue blue/green
+- Agregar monitoreo y alertas
+- Reemplazar el adaptador local de notificaciones por SES/SNS
+- Usar `TransactWriteItems` en flujos multi-escritura para mayor consistencia
+- Agregar pruebas de integracion REST
+- Incorporar documentacion OpenAPI
 
-- dominio
-- casos de uso
-- flujos de error
-- validación de reglas críticas
+## Notas para Entrevista
 
-Los tests evitan depender del contexto completo de Spring cuando no es necesario.
+Este proyecto esta intencionalmente disenado para equilibrar:
 
-## Mejoras Futuras
+- arquitectura limpia
+- reglas de negocio explicitas
+- alineacion con AWS
+- simplicidad operativa
 
-- Reemplazar el adaptador de notificación local por integración real con AWS SES/SNS
-- Usar `TransactWriteItems` en suscripción/cancelación para consistencia fuerte en DynamoDB
-- Agregar pruebas de integración REST
-- Incorporar documentación OpenAPI/Swagger
-- Gestionar `JWT_SECRET` con AWS Secrets Manager
-- Desplegar la aplicación en ECS Fargate o Elastic Beanstalk
-- Añadir observabilidad con métricas y trazas
-- Agregar CI/CD
+Es adecuado para una prueba tecnica backend porque demuestra:
 
-## Estado Actual
+- pensamiento orientado al dominio
+- separacion clara de responsabilidades
+- disciplina de testing
+- preparacion para cloud
+- seguridad basica sin sobredisenar
 
-- Arquitectura hexagonal implementada
-- Seguridad JWT operativa
-- Persistencia DynamoDB operativa
-- Entorno local reproducible
-- Plantilla CloudFormation base disponible
-- Tests unitarios pasando
+Tambien diferencia claramente entre:
 
-Este proyecto está diseñado para ser entendible, defendible técnicamente y suficientemente simple para una prueba técnica, sin perder estructura profesional.
+- reproducibilidad local con DynamoDB Local
+- infraestructura AWS con CloudFormation
+- despliegue del runtime de la aplicacion con Elastic Beanstalk

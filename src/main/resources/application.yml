@@ -19,6 +19,8 @@ management:
       show-details: never
 
 app:
+  bootstrap:
+    demo-data: false
   aws:
     dynamodb:
       region: us-east-1
